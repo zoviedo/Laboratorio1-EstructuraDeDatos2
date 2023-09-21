@@ -1,7 +1,7 @@
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import folium
+import graphviz
 
 class Node:
     def __init__(self, data, metric):
@@ -10,7 +10,6 @@ class Node:
         self.right = None
         self.height = 1
         self.metric = metric
-
 
 class AVLTree:
     def __init__(self):
@@ -35,9 +34,9 @@ class AVLTree:
                 node.left = self._insert_recursive(node.left, data)
             else:
                 node.right = self._insert_recursive(node.right, data)
-        if node != AVLTree.root:
-            # Update balance factor and balance the tree
-            node = self._balance_tree(node)
+
+        # Update balance factor and balance the tree
+        node = self._balance_tree(node)
 
         return node
 
@@ -105,18 +104,18 @@ class AVLTree:
         return y
 
     def _rotate_left(self, z):
-      y = z.right
-      T2 = y.left
+        y = z.right
+        T2 = y.left
 
-      # Realizar rotación
-      y.left = z
-      z.right = T2
+        # Realizar rotación
+        y.left = z
+        z.right = T2
 
-      # Actualizar alturas
-      z.height = 1 + max(self._get_height(z.left), self._get_height(z.right))
-      y.height = 1 + max(self._get_height(y.left), self._get_height(y.right))
+        # Actualizar alturas
+        z.height = 1 + max(self._get_height(z.left), self._get_height(z.right))
+        y.height = 1 + max(self._get_height(y.left), self._get_height(y.right))
 
-      return y
+        return y
 
 
     def plot_tree(self):
@@ -130,11 +129,11 @@ class AVLTree:
     def _plot_node(self, node, x, y, level):
         if node is not None:
             # Espaciado entre nodos y niveles
-            x_spacing = 100  # Aumenta este valor para un espaciado horizontal más amplio
-            y_spacing = 100  # Aumenta este valor para un espaciado vertical más amplio
+            x_spacing = 10000  # Aumenta este valor para un espaciado horizontal más amplio
+            y_spacing = 10000  # Aumenta este valor para un espaciado vertical más amplio
 
             # Dibujar el nodo actual
-            plt.scatter(x, y, color='blue', edgecolors='black', s=100)
+            plt.scatter(x, y, color='pink', edgecolors='black', s=1000)
             plt.text(x, y, str(node.metric), ha='center', va='center', color='white', fontsize=12)
 
             # Calcular las coordenadas de los hijos
@@ -151,19 +150,8 @@ class AVLTree:
                 plt.plot([x, x_right], [y, y_next], color='black')
                 self._plot_node(node.right, x_right, y_next, level + 1)
 
-def geolocalizar_en_mapa(df, index):
-    # Obtener las coordenadas de latitud y longitud del DataFrame
-    latitude = df.loc[index, 'latitud']
-    longitude = df.loc[index, 'longitud']
 
-    # Crear el mapa centrado en la ubicación especificada
-    mapa = folium.Map(location=[latitude, longitude], zoom_start=12)
 
-    # Agregar un marcador en la ubicación
-    folium.Marker([latitude, longitude], popup='Ubicación').add_to(mapa)
-
-    # Mostrar el mapa
-    return mapa
 AVLTree = AVLTree()
 df = pd.read_csv('co_properties_final.csv')
 # Insertar cada registro del DataFrame en el árbol
@@ -182,7 +170,7 @@ for _, row in df.iterrows():
         'operation_type': row['operation_type'],
         'price': row['price']
     }
-
     AVLTree.insert(data)
+
 AVLTree.plot_tree()
 
