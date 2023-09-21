@@ -1,15 +1,15 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import graphviz
+import folium
 
 class Node:
-    def __init__(self, data):
+    def __init__(self, data, metric):
         self.data = data
         self.left = None
         self.right = None
         self.height = 1
-        self.metric = None
+        self.metric = metric
 
 
 class AVLTree:
@@ -21,7 +21,8 @@ class AVLTree:
 
     def _insert_recursive(self, node, data):
         if node is None:
-            return Node(data)
+            metric = self._calculate_metric(data)
+            return Node(data, metric)
 
         # Insert node recursively
         if self._calculate_metric(data) < self._calculate_metric(node.data):
@@ -118,36 +119,6 @@ class AVLTree:
       return y
 
 
-    """def _plot_node(self, node, x, y, level):
-        # Si el nodo es None, no hay nada que graficar
-        if node is None:
-            return
-
-        # Calcular la posición x e y del nodo en el gráfico
-        x_shift = 100  # Espacio horizontal entre nodos
-        y_shift = 80   # Espacio vertical entre niveles del árbol
-        node_radius = 30  # Radio del nodo en el gráfico
-
-        # Graficar el nodo actual
-        plt.figure(figsize=(8, 6))
-        plt.scatter(x, y, color='blue', edgecolors='black', s=node_radius*100)
-        plt.text(x, y, str(node.data), ha='center', va='center', color='white', fontsize=12)
-
-        # Graficar las conexiones con los hijos izquierdo y derecho
-        if node.left is not None:
-            plt.plot([x, x - x_shift], [y, y - y_shift], color='black')
-            self._plot_node(node.left, x - x_shift, y - y_shift, level + 1)
-
-        if node.right is not None:
-            plt.plot([x, x + x_shift], [y, y - y_shift], color='black')
-            self._plot_node(node.right, x + x_shift, y - y_shift, level + 1)
-
-        plt.title('Árbol AVL')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.axis('off')
-        plt.show()"""
-
     def plot_tree(self):
         if self.root is not None:
             plt.figure(figsize=(10, 6))
@@ -159,12 +130,12 @@ class AVLTree:
     def _plot_node(self, node, x, y, level):
         if node is not None:
             # Espaciado entre nodos y niveles
-            x_spacing = 50
-            y_spacing = 50
+            x_spacing = 100  # Aumenta este valor para un espaciado horizontal más amplio
+            y_spacing = 100  # Aumenta este valor para un espaciado vertical más amplio
 
             # Dibujar el nodo actual
             plt.scatter(x, y, color='blue', edgecolors='black', s=100)
-            plt.text(x, y, str(node.data), ha='center', va='center', color='white', fontsize=12)
+            plt.text(x, y, str(node.metric), ha='center', va='center', color='white', fontsize=12)
 
             # Calcular las coordenadas de los hijos
             x_left = x - x_spacing * 2 ** (5 - level)
@@ -180,7 +151,19 @@ class AVLTree:
                 plt.plot([x, x_right], [y, y_next], color='black')
                 self._plot_node(node.right, x_right, y_next, level + 1)
 
+def geolocalizar_en_mapa(df, index):
+    # Obtener las coordenadas de latitud y longitud del DataFrame
+    latitude = df.loc[index, 'latitud']
+    longitude = df.loc[index, 'longitud']
 
+    # Crear el mapa centrado en la ubicación especificada
+    mapa = folium.Map(location=[latitude, longitude], zoom_start=12)
+
+    # Agregar un marcador en la ubicación
+    folium.Marker([latitude, longitude], popup='Ubicación').add_to(mapa)
+
+    # Mostrar el mapa
+    return mapa
 AVLTree = AVLTree()
 df = pd.read_csv('co_properties_final.csv')
 # Insertar cada registro del DataFrame en el árbol
