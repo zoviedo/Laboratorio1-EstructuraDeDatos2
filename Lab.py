@@ -1,12 +1,16 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import graphviz
 
 class Node:
     def __init__(self, data):
         self.data = data
         self.left = None
         self.right = None
+        self.height = 1
+        self.metric = None
+
 
 class AVLTree:
     def __init__(self):
@@ -22,16 +26,17 @@ class AVLTree:
         # Insert node recursively
         if self._calculate_metric(data) < self._calculate_metric(node.data):
             node.left = self._insert_recursive(node.left, data)
+
         elif self._calculate_metric(data) > self._calculate_metric(node.data):
             node.right = self._insert_recursive(node.right, data)
         else:
-            if self._calculate_second_metric(data) < self._calculate_second_metric(node.data):
+            if self._calculate_second_metric(data) < self._calculate_metric(node.data):
                 node.left = self._insert_recursive(node.left, data)
             else:
                 node.right = self._insert_recursive(node.right, data)
-
-        # Update balance factor and balance the tree
-        node = self._balance_tree(node)
+        if node != AVLTree.root:
+            # Update balance factor and balance the tree
+            node = self._balance_tree(node)
 
         return node
 
@@ -113,7 +118,7 @@ class AVLTree:
       return y
 
 
-    def _plot_node(self, node, x, y, level):
+    """def _plot_node(self, node, x, y, level):
         # Si el nodo es None, no hay nada que graficar
         if node is None:
             return
@@ -141,9 +146,43 @@ class AVLTree:
         plt.xlabel('X')
         plt.ylabel('Y')
         plt.axis('off')
-        plt.show()
+        plt.show()"""
+
+    def plot_tree(self):
+        if self.root is not None:
+            plt.figure(figsize=(10, 6))
+            self._plot_node(self.root, 0, 0, 1)
+            plt.title('Árbol AVL')
+            plt.axis('off')
+            plt.show()
+
+    def _plot_node(self, node, x, y, level):
+        if node is not None:
+            # Espaciado entre nodos y niveles
+            x_spacing = 50
+            y_spacing = 50
+
+            # Dibujar el nodo actual
+            plt.scatter(x, y, color='blue', edgecolors='black', s=100)
+            plt.text(x, y, str(node.data), ha='center', va='center', color='white', fontsize=12)
+
+            # Calcular las coordenadas de los hijos
+            x_left = x - x_spacing * 2 ** (5 - level)
+            x_right = x + x_spacing * 2 ** (5 - level)
+            y_next = y - y_spacing
+
+            # Dibujar las conexiones con los hijos
+            if node.left is not None:
+                plt.plot([x, x_left], [y, y_next], color='black')
+                self._plot_node(node.left, x_left, y_next, level + 1)
+
+            if node.right is not None:
+                plt.plot([x, x_right], [y, y_next], color='black')
+                self._plot_node(node.right, x_right, y_next, level + 1)
 
 
+AVLTree = AVLTree()
+df = pd.read_csv('co_properties_final.csv')
 # Insertar cada registro del DataFrame en el árbol
 for _, row in df.iterrows():
     data = {
@@ -160,4 +199,7 @@ for _, row in df.iterrows():
         'operation_type': row['operation_type'],
         'price': row['price']
     }
-    avl_tree.insert(data)
+
+    AVLTree.insert(data)
+AVLTree.plot_tree()
+
